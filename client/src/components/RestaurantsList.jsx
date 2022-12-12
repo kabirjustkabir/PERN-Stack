@@ -10,15 +10,15 @@ import StarRating from './StarRating';
 
 const RestaurantsList = () => {
     const {restaurants, setRestaurants} = useContext(RestaurantsContext);
-    const [page,setPage]= useState(1)
+    const [currentPage,setCurrentPage]= useState(1)
     const [limit,setLimit]= useState(5)
     const [paginationLength,setPaginationLength]= useState(0)
     const [pagArr,setPageArr] = useState([])
     let history = useHistory();
-    console.log("pagiiii",pagArr);
+    // console.log("pagiiii",pagArr);
     
     const fetchData = async(name='')=>{
-        console.log("namee",name);
+        // console.log("namee",name);
         
         try{
             const response = await restaurantsFinder.get(`/restaurants?name=${name}`)
@@ -32,6 +32,9 @@ const RestaurantsList = () => {
     useEffect(()=>{
         fetchData();
     },[]);
+    const indexOfLastPost = currentPage * limit;
+    const indexOfFirstPost = indexOfLastPost - limit;
+    const currentRestaurants = restaurants.slice(indexOfFirstPost,indexOfLastPost)
     useEffect(()=>{
         handlePageArr(paginationLength)
     },[paginationLength]);
@@ -47,7 +50,7 @@ const RestaurantsList = () => {
         e.stopPropagation();
         try{
             const response = await restaurantsFinder.delete(`/restaurants/${id}`);
-            console.log("sdjsd",response);
+            // console.log("sdjsd",response);
             setRestaurants(
                 restaurants.filter((restaurant)=>{
                     return restaurant.id !== id
@@ -101,7 +104,7 @@ const RestaurantsList = () => {
                 </tr>
             </thead>
             <tbody>
-                {restaurants && restaurants.map((restaurant)=>{
+                {restaurants && currentRestaurants.map((restaurant)=>{
                     return (
                         <tr onClick={()=>handleRestaurantSelect(restaurant.id)}  key={restaurant.id} style={{"cursor":"pointer"}}>
                         <td>{restaurant.name}</td>
@@ -123,11 +126,17 @@ const RestaurantsList = () => {
     <nav aria-label="Page navigation example">
         <ul className="pagination justify-content-center">
             { pagArr.length>0?pagArr.map((index)=>{
-                console.log("main");
-                return (
-                    <li key={index}  className="page-item"><a className="page-link" onClick={(number)=>{setPage(number)}} href="!#">{index}</a></li>
-                )
-            })  :<div>khali</div> 
+                if(index == currentPage){
+                    return (
+                        <li key={index}  className="page-item"><a className="page-link bg-primary text-white" onClick={()=>{setCurrentPage(index)}}>{index}</a></li>
+                    )
+                }else{
+                    return (
+                        <li key={index}  className="page-item"><a className="page-link" onClick={()=>{setCurrentPage(index)}}>{index}</a></li>
+                    )
+                }
+                
+            })  :<div>No Restaurants Available</div> 
             }
         </ul>
     </nav>
